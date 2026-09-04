@@ -5,10 +5,14 @@ on:
   schedule:
     - cron: '0 */4 * * *'
 
+# Отменяет предыдущие запущенные процессы этого же воркфлоу
+concurrency:
+  group: aternos-bot-group
+  cancel-in-progress: true
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-
     steps:
     - name: Clone Repository
       uses: actions/checkout@v4
@@ -16,11 +20,10 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '22' # Убрали строчку cache, чтобы гитхаб не ругался на отсутствие файлов
+        node-version: '22'
 
     - name: Quick Install
-      # Флаг --no-audit отключает долгие проверки безопасности и ставит всё мгновенно
-      run: npm install --no-audit 
+      run: npm install --no-audit
 
     - name: Run Bot Node.js
       env:
