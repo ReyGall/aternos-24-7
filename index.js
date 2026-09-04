@@ -1938,17 +1938,11 @@ function sendDiscordWebhook(content, color = 0x0099ff) {
   const protocol = config.discord.webhookUrl.startsWith("https") ? https : http;
   const urlParts = new URL(config.discord.webhookUrl);
 
+ // ИЗМЕНЕНО: убрали embeds и заменили на чистый текст в content
   const payload = JSON.stringify({
     username: config.name,
     avatar_url: "https://external-preview.redd.it/cat-meows-underwater-v0-cpo6IWLpTB0hiS6PgsHhTlv3vVSdRsLx1OGz3XGlsVE.png?format=pjpg&auto=webp&s=cce84ab15f1c0bd7bf6b4dc06ffbfc537bce36f9",
-    embeds: [
-      {
-        description: content,
-        color: color,
-        timestamp: new Date().toISOString(),
-        footer: { text: "Axel Afk Bot" },
-      },
-    ],
+    content: content // Теперь Дискорд будет вынужден рисовать аватарку для каждого сообщения!
   });
 
   const options = {
