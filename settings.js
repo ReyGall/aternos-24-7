@@ -1,4 +1,4 @@
-{
+module.exports = {
   "name": "Axel The Mlem",
   "bot-account": {
     "username": "Axel",
@@ -74,7 +74,8 @@
   },
   "discord": {
     "enabled": true,
-    "webhookUrl": "https://discord.com/api/webhooks/1545143105232179314/jYjprOuU4ib1qvRvR3pxzobKcwpAAHrMUtME2kuGcD3lJlLpR7onyUqIoZ2le_dFBbC4",
+    // FIX: Теперь вебхук полностью скрыт и читается из секретов GitHub!
+    "webhookUrl": process.env.DISCORD_WEBHOOK || "https://discord.com/api/webhooks/...",
     "events": {
       "connect": true,
       "disconnect": true,
@@ -84,4 +85,5 @@
   "chat": {
     "respond": true
   }
-}
+};
+
