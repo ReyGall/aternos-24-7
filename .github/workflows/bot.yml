@@ -1,13 +1,14 @@
 name: Infinite Aternos Bot 24/7
 
 on:
-  workflow_dispatch: # Позволяет запускать вручную кнопкой
+  workflow_dispatch: # Кнопка для ручного запуска в панели Actions
   schedule:
-    - cron: '0 */4 * * *' # Перезапуск каждые 4 часа, чтобы обойти ограничения сессий
+    - cron: '0 */4 * * *' # Авто-перезапуск каждые 4 часа, чтобы сессия GitHub не зависала
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+
     steps:
     - name: Clone Repository
       uses: actions/checkout@v4
@@ -19,6 +20,15 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+
+    - name: Run Bot Node.js
+      # Связываем все ваши секреты из настроек GitHub с кодом бота
+      env:
+        ATERNOS_IP: ${{ secrets.ATERNOS_IP }}
+        ATERNOS_PORT: ${{ secrets.ATERNOS_PORT }}
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      run: node index.js
+
 
     - name: Run Bot Node.js
       run: node index.js
