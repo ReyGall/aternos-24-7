@@ -1945,7 +1945,7 @@ function sendDiscordWebhook(content, color = 0x0099ff) {
         description: content,
         color: color,
         timestamp: new Date().toISOString(),
-        footer: { text: "Slobos AFK Bot" },
+        footer: { text: "Axel Afk Bot" },
       },
     ],
   });
