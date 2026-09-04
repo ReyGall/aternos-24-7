@@ -73,8 +73,8 @@
     "place-night": false
   },
   "discord": {
-    "enabled": false,
-    "webhookUrl": "YOUR_DISCORD_WEBHOOK_URL_HERE",
+    "enabled": true,
+    "webhookUrl": "https://discord.com/api/webhooks/1545143105232179314/jYjprOuU4ib1qvRvR3pxzobKcwpAAHrMUtME2kuGcD3lJlLpR7onyUqIoZ2le_dFBbC4",
     "events": {
       "connect": true,
       "disconnect": true,
