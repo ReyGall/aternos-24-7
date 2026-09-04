@@ -6,8 +6,8 @@ module.exports = {
     "type": "offline"
   },
   "server": {
-    "ip": process.env.ATERNOS_IP || "MineBlood_4.aternos.me",
-    "port": process.env.ATERNOS_PORT ? parseInt(process.env.ATERNOS_PORT) : 33150,
+    "ip": process.env.ATERNOS_IP || "",
+    "port": process.env.ATERNOS_PORT ? parseInt(process.env.ATERNOS_PORT) : 0,
     "version": "",
     "try-creative": false
   },
