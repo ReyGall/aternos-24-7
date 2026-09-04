@@ -13,19 +13,18 @@ jobs:
     - name: Clone Repository
       uses: actions/checkout@v4
 
-    - name: Setup Node.js & Auto-Install
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '22'
-        cache: 'npm' # Гитхаб сам проверит package.json и мгновенно развернет библиотеки
+        node-version: '22' # Убрали строчку cache, чтобы гитхаб не ругался на отсутствие файлов
+
+    - name: Quick Install
+      # Флаг --no-audit отключает долгие проверки безопасности и ставит всё мгновенно
+      run: npm install --no-audit 
 
     - name: Run Bot Node.js
       env:
         ATERNOS_IP: ${{ secrets.ATERNOS_IP }}
         ATERNOS_PORT: ${{ secrets.ATERNOS_PORT }}
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      run: node index.js
-
-
-    - name: Run Bot Node.js
       run: node index.js
