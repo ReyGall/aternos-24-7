@@ -1,0 +1,24 @@
+name: Infinite Aternos Bot 24/7
+
+on:
+  workflow_dispatch: # Позволяет запускать вручную кнопкой
+  schedule:
+    - cron: '0 */4 * * *' # Перезапуск каждые 4 часа, чтобы обойти ограничения сессий
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run Bot Node.js
+      run: node index.js
