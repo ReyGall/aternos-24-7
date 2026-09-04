@@ -1940,6 +1940,7 @@ function sendDiscordWebhook(content, color = 0x0099ff) {
 
   const payload = JSON.stringify({
     username: config.name,
+    avatar_url: "https://external-preview.redd.it/cat-meows-underwater-v0-cpo6IWLpTB0hiS6PgsHhTlv3vVSdRsLx1OGz3XGlsVE.png?format=pjpg&auto=webp&s=cce84ab15f1c0bd7bf6b4dc06ffbfc537bce36f9",
     embeds: [
       {
         description: content,
