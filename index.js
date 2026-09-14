@@ -1166,18 +1166,18 @@ function addInterval(callback, delay) {
 function getReconnectDelay() {
   if (botState.wasThrottled) {
     botState.wasThrottled = false;
-    const throttleDelay = 60000 + Math.floor(Math.random() * 60000);
-    addLog(
-      `[Bot] Throttle detected - using extended delay: ${throttleDelay / 1000}s`,
-    );
+    const throttleDelay = 60000 + Math.floor(Math.random() * 30000); // Снизили оверах до 1-1.5 минуты при флуде
+    addLog(`[Bot] Throttle detected - using extended delay: ${throttleDelay / 1000}s`);
     return throttleDelay;
   }
 
-  // FIX: read auto-reconnect-delay from settings as base delay
-  const baseDelay = config.utils["auto-reconnect-delay"] || 3000;
-  const maxDelay = config.utils["max-reconnect-delay"] || 30000;
+  const baseDelay = config.utils["auto-reconnect-delay"] || 2000;
+  // Жестко ограничиваем максимум, например, на 15-20 секундах для обычных падений, 
+  // чтобы даже при серии socketClosed пауза не росла до бесконечности
+  const maxDelay = Math.min(config.utils["max-reconnect-delay"] || 120000, 20000); 
+
   const delay = Math.min(
-    baseDelay * Math.pow(2, botState.reconnectAttempts),
+    baseDelay * Math.pow(1.5, botState.reconnectAttempts), // Мягкий коэффициент роста (1.5 вместо 2)
     maxDelay,
   );
   const jitter = Math.floor(Math.random() * 2000);
