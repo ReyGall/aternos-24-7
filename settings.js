@@ -39,7 +39,7 @@ module.exports = {
     "chat-log": true,
     "auto-reconnect": true,
     "auto-reconnect-delay": 2000,
-    "max-reconnect-delay": 120000
+    "max-reconnect-delay": 15000
   },
   "movement": {
     "enabled": true,
