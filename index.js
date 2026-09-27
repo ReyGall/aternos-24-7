@@ -989,6 +989,8 @@ app.post("/stop", (req, res) => {
   if (!botRunning) return res.json({ success: false, msg: "Already stopped" });
 
   botRunning = false;
+  clearDisconnectCycleTimer();
+  plannedReconnectDelay = null;
 
   if (bot) {
     bot.end();
@@ -1135,6 +1137,8 @@ let activeIntervals = [];
 let reconnectTimeoutId = null;
 let connectionTimeoutId = null;
 let isReconnecting = false;
+let disconnectCycleTimer = null;
+let plannedReconnectDelay = null;
 
 function clearBotTimeouts() {
   if (reconnectTimeoutId) {
@@ -1145,6 +1149,37 @@ function clearBotTimeouts() {
     clearTimeout(connectionTimeoutId);
     connectionTimeoutId = null;
   }
+}
+
+function clearDisconnectCycleTimer() {
+  if (disconnectCycleTimer) {
+    clearTimeout(disconnectCycleTimer);
+    disconnectCycleTimer = null;
+  }
+}
+
+function scheduleDisconnectCycle() {
+  clearDisconnectCycleTimer();
+  disconnectCycleTimer = setTimeout(() => {
+    if (!bot || !botState.connected) return;
+
+    plannedReconnectDelay = 20000 + Math.floor(Math.random() * 10000);
+    addLog(
+      `[Bot] 4-hour cycle reached - disconnecting from server and reconnecting in ${plannedReconnectDelay / 1000}s`,
+    );
+    if (config.discord && config.discord.events && config.discord.events.disconnect) {
+      sendDiscordWebhook(
+        `[-] **4-hour reconnect cycle**: disconnecting now and reconnecting in ${plannedReconnectDelay / 1000}s`,
+        0xf59e0b,
+      );
+    }
+    try {
+      bot.end();
+    } catch (e) {
+      addLog(`[Bot] Disconnect cycle error: ${e.message}`);
+      plannedReconnectDelay = null;
+    }
+  }, 4 * 60 * 60 * 1000);
 }
 
 // FIX: Discord rate limiting - track last send time
@@ -1189,6 +1224,8 @@ function createBot() {
     addLog("[Bot] Already reconnecting, skipping...");
     return;
   }
+
+  clearDisconnectCycleTimer();
 
   // Cleanup previous bot properly to avoid ghost bots
   if (bot) {
@@ -1253,6 +1290,8 @@ function createBot() {
       botState.lastActivity = Date.now();
       botState.reconnectAttempts = 0;
       isReconnecting = false;
+      plannedReconnectDelay = null;
+      scheduleDisconnectCycle();
 
       addLog(
         `[Bot] [+] Successfully spawned on server! (Version: ${bot.version})`,
@@ -1338,6 +1377,7 @@ function createBot() {
       addLog(`[Bot] Disconnected: ${reason || "Unknown reason"}`);
       botState.connected = false;
       clearAllIntervals();
+      clearDisconnectCycleTimer();
       spawnHandled = false; // reset for next connection
 
       if (
@@ -1349,6 +1389,20 @@ function createBot() {
           `[-] **Disconnected**: ${reason || "Unknown"}`,
           0xf87171,
         );
+      }
+
+      if (plannedReconnectDelay) {
+        const delay = plannedReconnectDelay;
+    addLog(
+      `[Bot] Scheduled reconnect after 4-hour disconnect cycle: ${delay / 1000}s`,
+    );
+    if (config.discord && config.discord.events && config.discord.events.disconnect) {
+      sendDiscordWebhook(
+        `[!] **Reconnect scheduled**: ${delay / 1000}s until reconnect after the 4-hour disconnect cycle`,
+        0x3b82f6,
+      );
+    }
+        return;
       }
 
       // ALWAYS reconnect — bot must never leave the server
@@ -1367,7 +1421,7 @@ function createBot() {
   }
 }
 
-function scheduleReconnect() {
+function scheduleReconnect(customDelay = null) {
   clearBotTimeouts();
 
   // FIX: don't stack reconnect if already waiting
@@ -1379,7 +1433,7 @@ function scheduleReconnect() {
   isReconnecting = true;
   botState.reconnectAttempts++;
 
-  const delay = getReconnectDelay();
+  const delay = customDelay ?? getReconnectDelay();
   addLog(
     `[Bot] Reconnecting in ${delay / 1000}s (attempt #${botState.reconnectAttempts})`,
   );
