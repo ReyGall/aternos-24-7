@@ -2,8 +2,6 @@ name: Infinite Aternos Bot 24/7
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 */4 * * *'
 
 # Отменяет предыдущие запущенные процессы этого же воркфлоу
 concurrency:
