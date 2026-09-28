@@ -1,10 +1,22 @@
 module.exports = {
   "name": "Axel The Mlem",
   "bot-account": {
-    "username": "Axel",
-    "password": "",
-    "type": "offline"
+    "username": process.env.BOT_ACCOUNT_1_USERNAME || "Axel",
+    "password": process.env.BOT_ACCOUNT_1_PASSWORD || "",
+    "type": process.env.BOT_ACCOUNT_1_TYPE || "offline"
   },
+  "bot-accounts": [
+    {
+      "username": process.env.BOT_ACCOUNT_1_USERNAME || "Axel",
+      "password": process.env.BOT_ACCOUNT_1_PASSWORD || "",
+      "type": process.env.BOT_ACCOUNT_1_TYPE || "offline"
+    },
+    {
+      "username": process.env.BOT_ACCOUNT_2_USERNAME || "Rehxchi",
+      "password": process.env.BOT_ACCOUNT_2_PASSWORD || "",
+      "type": process.env.BOT_ACCOUNT_2_TYPE || "offline"
+    }
+  ],
   "server": {
     "ip": process.env.ATERNOS_IP || "",
     "port": process.env.ATERNOS_PORT ? parseInt(process.env.ATERNOS_PORT) : 0,

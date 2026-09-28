@@ -1139,6 +1139,19 @@ let connectionTimeoutId = null;
 let isReconnecting = false;
 let disconnectCycleTimer = null;
 let plannedReconnectDelay = null;
+let botRotationIndex = 0;
+
+function getBotAccounts() {
+  if (Array.isArray(config["bot-accounts"]) && config["bot-accounts"].length > 0) {
+    return config["bot-accounts"];
+  }
+  return [config["bot-account"]];
+}
+
+function getActiveBotAccount() {
+  const accounts = getBotAccounts();
+  return accounts[botRotationIndex % accounts.length];
+}
 
 function clearBotTimeouts() {
   if (reconnectTimeoutId) {
@@ -1163,13 +1176,20 @@ function scheduleDisconnectCycle() {
   disconnectCycleTimer = setTimeout(() => {
     if (!bot || !botState.connected) return;
 
+    const accounts = getBotAccounts();
+    const currentIndex = botRotationIndex % accounts.length;
+    const currentAccount = accounts[currentIndex];
+    const nextIndex = accounts.length > 1 ? (currentIndex + 1) % accounts.length : currentIndex;
+    botRotationIndex = nextIndex;
+    const nextAccount = accounts[nextIndex];
+
     plannedReconnectDelay = 20000 + Math.floor(Math.random() * 10000);
     addLog(
-      `[Bot] 4-hour cycle reached - disconnecting from server and reconnecting in ${plannedReconnectDelay / 1000}s`,
+      `[Bot] 3-hour cycle reached - ${currentAccount.username} disconnecting and ${nextAccount.username} reconnecting in ${plannedReconnectDelay / 1000}s`,
     );
     if (config.discord && config.discord.events && config.discord.events.disconnect) {
       sendDiscordWebhook(
-        `[-] **4-hour reconnect cycle**: disconnecting now and reconnecting in ${plannedReconnectDelay / 1000}s`,
+        `[-] **3-hour rotation**: ${currentAccount.username} disconnected, ${nextAccount.username} reconnects in ${plannedReconnectDelay / 1000}s`,
         0xf59e0b,
       );
     }
@@ -1179,7 +1199,7 @@ function scheduleDisconnectCycle() {
       addLog(`[Bot] Disconnect cycle error: ${e.message}`);
       plannedReconnectDelay = null;
     }
-  }, 4 * 60 * 60 * 1000);
+  }, 3 * 60 * 60 * 1000);
 }
 
 // FIX: Discord rate limiting - track last send time
@@ -1249,10 +1269,14 @@ function createBot() {
       config.server.version && config.server.version.trim() !== ""
         ? config.server.version
         : false;
+    const activeAccount = getActiveBotAccount();
+    addLog(
+      `[Bot] Authenticating as ${activeAccount.username} (${activeAccount.type || "offline"})`,
+    );
     bot = mineflayer.createBot({
-      username: config["bot-account"].username,
-      password: config["bot-account"].password || undefined,
-      auth: config["bot-account"].type,
+      username: activeAccount.username,
+      password: activeAccount.password || undefined,
+      auth: activeAccount.type || config["bot-account"].type,
       host: config.server.ip,
       port: config.server.port,
       version: botVersion,
@@ -1393,15 +1417,18 @@ function createBot() {
 
       if (plannedReconnectDelay) {
         const delay = plannedReconnectDelay;
-    addLog(
-      `[Bot] Scheduled reconnect after 4-hour disconnect cycle: ${delay / 1000}s`,
-    );
-    if (config.discord && config.discord.events && config.discord.events.disconnect) {
-      sendDiscordWebhook(
-        `[!] **Reconnect scheduled**: ${delay / 1000}s until reconnect after the 4-hour disconnect cycle`,
-        0x3b82f6,
-      );
-    }
+        const nextAccount = getActiveBotAccount();
+        addLog(
+          `[Bot] Scheduled reconnect after 3-hour rotation for ${nextAccount.username}: ${delay / 1000}s`,
+        );
+        if (config.discord && config.discord.events && config.discord.events.disconnect) {
+          sendDiscordWebhook(
+            `[!] **Reconnect scheduled**: ${nextAccount.username} reconnects in ${delay / 1000}s after the 3-hour rotation`,
+            0x3b82f6,
+          );
+        }
+        plannedReconnectDelay = null;
+        scheduleReconnect(delay);
         return;
       }
 
