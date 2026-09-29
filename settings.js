@@ -45,7 +45,10 @@ module.exports = {
       "messages": [
         "I'm a regular player",
         "Big Black Balls HD",
-        "The sun is shining!"
+        "The sun is shining!",
+        "Slava Benderi!",
+        "kosovo forever",
+        "ms boobs"
       ]
     },
     "chat-log": true,
